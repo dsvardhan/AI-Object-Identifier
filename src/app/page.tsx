@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { CSSProperties } from "react";
 
 interface IdentifiedObject {
   label: string;
@@ -61,13 +62,33 @@ export default function Home() {
     setSelectedObject(obj);
   };
 
+  // const renderBoundingBox = (obj: IdentifiedObject) => {
+  //   const isSelected = selectedObject?.label === obj.label;
+  //   if (!isSelected || !imageRef.current) return null;
+
+  //   const { x, y } = imageScale;
+  //   const { xmin, ymin, xmax, ymax } = obj.box;
+  //   const style = {
+  //     left: `${xmin * x}px`,
+  //     top: `${ymin * y}px`,
+  //     width: `${(xmax - xmin) * x}px`,
+  //     height: `${(ymax - ymin) * y}px`,
+  //     border: '3px solid yellow',
+  //     position: 'absolute',
+  //     boxShadow: '0 0 10px 5px yellow',
+  //     pointerEvents: 'none',
+  //   };
+
+  //   return <div key={obj.label} style={style}></div>;
+  // };
+
   const renderBoundingBox = (obj: IdentifiedObject) => {
     const isSelected = selectedObject?.label === obj.label;
     if (!isSelected || !imageRef.current) return null;
-
+  
     const { x, y } = imageScale;
     const { xmin, ymin, xmax, ymax } = obj.box;
-    const style = {
+    const style: CSSProperties = { // Explicitly defining the type as CSSProperties
       left: `${xmin * x}px`,
       top: `${ymin * y}px`,
       width: `${(xmax - xmin) * x}px`,
@@ -77,108 +98,150 @@ export default function Home() {
       boxShadow: '0 0 10px 5px yellow',
       pointerEvents: 'none',
     };
-
+  
     return <div key={obj.label} style={style}></div>;
   };
 
-//   return (
-//     <main className="font-sans text-center p-6 bg-gradient-to-b from-background-start to-background-end text-foreground">
-//       <h1 className="text-3xl font-bold mb-6">Object Identifier</h1>
+  // useEffect(() => {
+  //   // Function to update scale based on the current image dimensions
+  //   const updateScale = () => {
+  //     if (imageRef.current) {
+  //       const rect = imageRef.current.getBoundingClientRect();
+  //       setImageScale({
+  //         x: rect.width / imageRef.current.naturalWidth,
+  //         y: rect.height / imageRef.current.naturalHeight
+  //       });
+  //     }
+  //   };
 
-//       <p className="mb-4 text-lg">
-//         Welcome to the Object Identifier! Upload an image to detect objects. Click on the object names below the image to highlight them in the image.
+  //   window.addEventListener('resize', updateScale);
+  //   updateScale();
+  //   return () => window.removeEventListener('resize', updateScale);
+  // }, [theFile, identifiedObjects]);
+
+  useEffect(() => {
+    // Function to update scale based on the current image dimensions
+    const updateScale = () => {
+      if (imageRef.current) {
+        const rect = imageRef.current.getBoundingClientRect();
+        setImageScale({
+          x: rect.width / imageRef.current.naturalWidth,
+          y: rect.height / imageRef.current.naturalHeight
+        });
+      }
+    };
+
+    window.addEventListener('resize', updateScale);
+    updateScale();
+    return () => window.removeEventListener('resize', updateScale);
+  }, [theFile, identifiedObjects]);
+
+
+
+
+//   return (
+//     <main className="font-sans text-center p-6 bg-gradient-to-b from-background-start to-background-end text-foreground min-h-screen">
+//       <h1 className="text-4xl font-bold mb-8 text-blue-600">AI Object Identifier</h1>
+      
+//       <p className="mb-6 text-lg text-gray-200">
+//         Upload an image to detect objects. Click on the object names to highlight them.
 //       </p>
 
 //       <input
 //         type="file"
 //         onChange={handleFileChange}
 //         accept="image/*"
-//         className="mb-4 p-2 border border-gray-300 rounded-md"
+//         className="mb-4 p-2 border border-blue-400 rounded-lg cursor-pointer"
 //       />
 
-//       <div className="relative mx-auto w-full max-w-3xl mb-4">
-//         {theFile && (
-//           <img
-//             ref={imageRef}
-//             src={URL.createObjectURL(theFile)}
-//             alt="Uploaded"
-//             className="w-full h-auto"
-//             onLoad={() => identifiedObjects.forEach(obj => renderBoundingBox(obj))}
-//           />
-//         )}
-//         {selectedObject && renderBoundingBox(selectedObject)}
-//       </div>
-
-//       {identifiedObjects.length > 0 && (
-//         <div className="mb-4">
-//           <h2 className="text-xl font-semibold">Identified Objects:</h2>
-//           <p>Click on an object name to highlight it in the image.</p>
+//       <div className="flex flex-col md:flex-row justify-start items-start gap-8">
+//         <div className="flex-1 min-w-0">
+//           {theFile && (
+//             <div className="relative w-full max-w-lg mx-auto">
+//               <img
+//                 ref={imageRef}
+//                 src={URL.createObjectURL(theFile)}
+//                 alt="Uploaded"
+//                 className="w-full max-w-lg h-auto mx-auto shadow-lg rounded-lg"
+//                 onLoad={() => identifiedObjects.forEach(obj => renderBoundingBox(obj))}
+//               />
+//               {selectedObject && renderBoundingBox(selectedObject)}
+//             </div>
+//           )}
 //         </div>
-//       )}
 
-//       <div className="flex justify-center flex-wrap gap-2">
-//         {identifiedObjects.map(obj => (
-//           <button
-//             key={obj.label}
-//             onClick={() => selectObject(obj)}
-//             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-//           >
-//             {obj.label}
-//           </button>
-//         ))}
+//         {identifiedObjects.length > 0 && (
+//           <div className="flex-1 max-w-md">
+//             <h2 className="text-2xl font-semibold text-blue-500 mb-3">Identified Objects:</h2>
+//             <p className="text-gray-300 mb-4">Click on an object name to highlight it.</p>
+//             <div className="flex flex-wrap gap-4 justify-start">
+//               {identifiedObjects.map(obj => (
+//                 <button
+//                   key={obj.label}
+//                   onClick={() => selectObject(obj)}
+//                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition duration-300"
+//                 >
+//                   {obj.label}
+//                 </button>
+//               ))}
+//             </div>
+//           </div>
+//         )}
 //       </div>
 //     </main>
 //   );
 // }
 
+
 return (
-  <main className="font-sans text-center p-6 bg-gradient-to-b from-background-start to-background-end text-foreground min-h-screen">
-    <h1 className="text-4xl font-bold mb-8 text-blue-600">AI Object Identifier</h1>
+  <main className="text-center p-6">
+    <h1 className="text-4xl font-bold mb-8">AI Object Identifier</h1>
     
-    <p className="mb-6 text-lg text-gray-200">
-      Discover objects in your images. Upload an image and click on identified object names to highlight them.
+    <p className="mb-6 text-lg">
+      Upload an image to detect objects. Click on the object names to highlight them.
     </p>
 
-    <div className="mb-6">
-      <input
-        type="file"
-        onChange={handleFileChange}
-        accept="image/*"
-        className="mb-4 p-3 border border-blue-400 rounded-lg cursor-pointer"
-      />
-    </div>
+    <input
+      type="file"
+      onChange={handleFileChange}
+      accept="image/*"
+      className="mb-4 p-2 border rounded-lg cursor-pointer"
+    />
 
-    <div className="relative mx-auto w-full max-w-4xl mb-8">
-      {theFile && (
-        <img
-          ref={imageRef}
-          src={URL.createObjectURL(theFile)}
-          alt="Uploaded"
-          className="w-full h-auto rounded-lg shadow-lg"
-          onLoad={() => identifiedObjects.forEach(obj => renderBoundingBox(obj))}
-        />
-      )}
-      {selectedObject && renderBoundingBox(selectedObject)}
-    </div>
-
-    {identifiedObjects.length > 0 && (
-      <div className="mb-4 text-left mx-auto w-full max-w-3xl">
-        <h2 className="text-2xl font-semibold text-blue-500 mb-3">Identified Objects:</h2>
-        <p className="text-gray-300 mb-4">Click on an object name to highlight it.</p>
-        <div className="flex justify-center flex-wrap gap-4">
-          {identifiedObjects.map(obj => (
-            <button
-              key={obj.label}
-              onClick={() => selectObject(obj)}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition duration-300"
-            >
-              {obj.label}
-            </button>
-          ))}
-        </div>
+    <div className="flex flex-col md:flex-row justify-start items-start gap-8">
+      <div className="flex-1">
+        {theFile && (
+          <div className="relative w-full max-w-lg mx-auto">
+            <img
+              ref={imageRef}
+              src={URL.createObjectURL(theFile)}
+              alt="Uploaded"
+              className="w-full h-auto mx-auto shadow-lg rounded-lg"
+              onLoad={() => identifiedObjects.forEach(obj => renderBoundingBox(obj))}
+            />
+            {selectedObject && renderBoundingBox(selectedObject)}
+          </div>
+        )}
       </div>
-    )}
+
+      {identifiedObjects.length > 0 && (
+        <div className="flex-1 max-w-md">
+          <h2 className="text-2xl font-semibold mb-3">Identified Objects:</h2>
+          <p className="mb-4">Click on an object name to highlight it.</p>
+          <div className="flex flex-wrap gap-4 justify-start">
+            {identifiedObjects.map(obj => (
+              <button
+                key={obj.label}
+                onClick={() => selectObject(obj)}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition duration-300"
+              >
+                {obj.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   </main>
 );
 }
-
